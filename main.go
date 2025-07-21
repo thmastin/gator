@@ -38,6 +38,7 @@ func main() {
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
 	cmds.register("reset", handlerReset)
+	cmds.register("users", handlerUsers)
 
 	cliInput := os.Args
 	if len(cliInput) < 2 {
@@ -127,6 +128,26 @@ func handlerReset(s *state, cmd command) error {
 		os.Exit(1)
 	}
 	fmt.Println("Database reset")
+	return nil
+}
+
+func handlerUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		fmt.Println("Error getting users", err)
+		os.Exit(1)
+	}
+	if len(users) < 1 {
+		fmt.Print("No users found")
+	} else {
+		for _, user := range users {
+			if user.Name == s.cfg.CurrentUserName {
+				fmt.Println("*", user.Name, "(current)")
+			} else {
+				fmt.Println("*", user.Name)
+			}
+		}
+	}
 	return nil
 }
 
