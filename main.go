@@ -45,6 +45,7 @@ func main() {
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerUsers)
 	cmds.register("agg", handlerAgg)
+	cmds.register("addfeed", handlerAddFeed)
 
 	cliInput := os.Args
 	if len(cliInput) < 2 {
@@ -167,6 +168,31 @@ func handlerAgg(s *state, cmd command) error {
 		return err
 	}
 	fmt.Println(string(b))
+	return nil
+}
+
+func handlerAddFeed(s *state, cmd command) error {
+	if len(cmd.arguments) < 2 {
+		return errors.New("you must enter a name and url")
+	}
+	currentUser := s.cfg.CurrentUserName
+	currentUserId, err := s.db.GetUser(context.Background(), currentUser)
+	if err != nil {
+		return fmt.Errorf("cannot get user id", err)
+	}
+	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.arguments[0],
+		Url:       cmd.arguments[1],
+		UserID:    currentUserId.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("unable to create feed", err)
+	}
+	fmt.Println("Feed successfully created")
+	fmt.Printf("Feed data: %+v\n", feed)
 	return nil
 }
 
