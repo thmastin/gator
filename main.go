@@ -198,16 +198,12 @@ func handlerAddFeed(s *state, cmd command) error {
 }
 
 func handlerFeeds(s *state, cmd command) error {
-	feeds, err := s.db.GetFeeds(context.Background())
+	feeds, err := s.db.GetFeedsWithUsers(context.Background())
 	if err != nil {
 		return fmt.Errorf("error getting feeds: %v", err)
 	}
 	for i := range feeds {
-		user, err := s.db.GetUserById(context.Background(), feeds[i].UserID)
-		if err != nil {
-			return fmt.Errorf("error getting user name: %v", err)
-		}
-		fmt.Printf("Name: %s URL: %s User: %s\n", feeds[i].Name, feeds[i].Url, user.Name)
+		fmt.Printf("Name: %s URL: %s User: %s\n", feeds[i].Name, feeds[i].Url, feeds[i].UserName)
 	}
 	return nil
 }
