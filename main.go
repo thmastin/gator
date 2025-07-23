@@ -46,6 +46,7 @@ func main() {
 	cmds.register("users", handlerUsers)
 	cmds.register("agg", handlerAgg)
 	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("feeds", handlerFeeds)
 
 	cliInput := os.Args
 	if len(cliInput) < 2 {
@@ -193,6 +194,21 @@ func handlerAddFeed(s *state, cmd command) error {
 	}
 	fmt.Println("Feed successfully created")
 	fmt.Printf("Feed data: %+v\n", feed)
+	return nil
+}
+
+func handlerFeeds(s *state, cmd command) error {
+	feeds, err := s.db.GetFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("error getting feeds: %v", err)
+	}
+	for i := range feeds {
+		user, err := s.db.GetUserById(context.Background(), feeds[i].UserID)
+		if err != nil {
+			return fmt.Errorf("error getting user name: %v", err)
+		}
+		fmt.Printf("Name: %s URL: %s User: %s\n", feeds[i].Name, feeds[i].Url, user.Name)
+	}
 	return nil
 }
 
