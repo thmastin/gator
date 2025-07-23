@@ -179,7 +179,7 @@ func handlerAddFeed(s *state, cmd command) error {
 	currentUser := s.cfg.CurrentUserName
 	currentUserId, err := s.db.GetUser(context.Background(), currentUser)
 	if err != nil {
-		return fmt.Errorf("cannot get user id", err)
+		return fmt.Errorf("cannot get user id: %v", err)
 	}
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID:        uuid.New(),
@@ -190,7 +190,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		UserID:    currentUserId.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("unable to create feed", err)
+		return fmt.Errorf("unable to create fee: %v", err)
 	}
 	fmt.Println("Feed successfully created")
 	fmt.Printf("Feed data: %+v\n", feed)
