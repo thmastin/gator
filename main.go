@@ -194,6 +194,17 @@ func handlerAddFeed(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("unable to create feed: %v", err)
 	}
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    currentUserId.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("unalbe to follow feed: %v", err)
+	}
+
 	fmt.Println("Feed successfully created")
 	fmt.Printf("Feed data: %+v\n", feed)
 	return nil
@@ -215,7 +226,7 @@ func handlerFollow(s *state, cmd command) error {
 		return errors.New("you must enter a url")
 	}
 	currentUser := s.cfg.CurrentUserName
-	currentUserID, err := s.db.GetUser(context.Background(), currentUser)
+	currentUserId, err := s.db.GetUser(context.Background(), currentUser)
 	if err != nil {
 		return fmt.Errorf("cannot get user id: %v", err)
 	}
@@ -227,7 +238,7 @@ func handlerFollow(s *state, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		UserID:    currentUserID.ID,
+		UserID:    currentUserId.ID,
 		FeedID:    feed.ID,
 	})
 	if err != nil {
@@ -240,16 +251,16 @@ func handlerFollow(s *state, cmd command) error {
 
 func handlerFollowing(s *state, cmd command) error {
 	currentUser := s.cfg.CurrentUserName
-	currentUserID, err := s.db.GetUser(context.Background(), currentUser)
+	currentUserId, err := s.db.GetUser(context.Background(), currentUser)
 	if err != nil {
 		return fmt.Errorf("cannot get user id: %v", err)
 	}
-	follows, err := s.db.GetFeedFollowsForUser(context.Background(), currentUserID.ID)
+	follows, err := s.db.GetFeedFollowsForUser(context.Background(), currentUserId.ID)
 	if err != nil {
-		return fmt.Errorf("cannot get feeds that %s is following: %v", currentUserID.Name, err)
+		return fmt.Errorf("cannot get feeds that %s is following: %v", currentUserId.Name, err)
 	}
 	if len(follows) < 1 {
-		fmt.Printf("User %s, is not following any feeds. Use the 'addfeed' command to add one\n", currentUserID.Name)
+		fmt.Printf("User %s, is not following any feeds. Use the 'addfeed' command to add one\n", currentUserId.Name)
 		return nil
 	}
 	for i := range follows {
