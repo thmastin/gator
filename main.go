@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -49,6 +50,7 @@ func main() {
 	cmds.register("follow", middlewareLoggedIn(handlerFollow))
 	cmds.register("following", middlewareLoggedIn(handlerFollowing))
 	cmds.register("unfollow", middlewareLoggedIn(handlerUnfollow))
+	cmds.register("browse", middlewareLoggedIn(handlerBrowse))
 
 	cliInput := os.Args
 	if len(cliInput) < 2 {
@@ -265,6 +267,35 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 	err := s.db.UnfollowFeed(context.Background(), params)
 	if err != nil {
 		return fmt.Errorf("cannot unfollow feed: %v", err)
+	}
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command, user database.User) error {
+	var limitArg int32
+	if len(cmd.arguments) < 1 {
+		limitArg = 2
+	} else {
+		parsedInt, err := strconv.ParseInt(cmd.arguments[0], 10, 32)
+		if err != nil {
+			return errors.New("you must provide an whole number for the limit")
+		} else {
+			limitArg = int32(parsedInt)
+		}
+
+	}
+	params := database.GetPostsForUserParams{ID: user.ID, Limit: limitArg}
+	fmt.Printf("Getting posts for %s\n", user.Name)
+	posts, err := s.db.GetPostsForUser(context.Background(), params)
+	if err != nil {
+		return err
+	}
+	if len(posts) < 1 {
+		fmt.Printf("No posts to display for %s\n", user.Name)
+	} else {
+		for i := range len(posts) {
+			fmt.Printf("Feed Name: %v\nTitle: %v\nPublished At: %v\nDescription: %v\nLink: %v\n\n", posts[i].FeedName, posts[i].Title, posts[i].PublishedAt, posts[i].Description.String, posts[i].Url)
+		}
 	}
 	return nil
 }
