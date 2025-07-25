@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -163,16 +162,18 @@ func handlerUsers(s *state, cmd command) error {
 }
 
 func handlerAgg(s *state, cmd command) error {
-	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if len(cmd.arguments) < 1 {
+		return errors.New("no time frame set")
+	}
+	time_between_requests, err := time.ParseDuration(cmd.arguments[0])
 	if err != nil {
 		return err
 	}
-	b, err := json.MarshalIndent(feed, "", "  ")
-	if err != nil {
-		return err
+	fmt.Printf("Collecting feeds every %v\n", cmd.arguments[0])
+	ticker := time.NewTicker(time_between_requests)
+	for ; ; <-ticker.C {
+		scrapeFeeds(s)
 	}
-	fmt.Println(string(b))
-	return nil
 }
 
 func handlerAddFeed(s *state, cmd command, user database.User) error {
@@ -257,13 +258,13 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 
 func handlerUnfollow(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) < 1 {
-		return errors.New("You must enter a url to unfollow")
+		return errors.New("you must enter a url to unfollow")
 	}
 
 	params := database.UnfollowFeedParams{Name: user.Name, Url: cmd.arguments[0]}
 	err := s.db.UnfollowFeed(context.Background(), params)
 	if err != nil {
-		return fmt.Errorf("Cannot unfollow feed: %v", err)
+		return fmt.Errorf("cannot unfollow feed: %v", err)
 	}
 	return nil
 }
@@ -343,6 +344,28 @@ func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 	}
 
 	return &newFeed, nil
+
+}
+
+func scrapeFeeds(s *state) error {
+	feed, err := s.db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return err
+	}
+	params := database.MarkFeedFetchedParams{LastFetchedAt: sql.NullTime{Time: time.Now(), Valid: true}, UpdatedAt: time.Now(), ID: feed.ID}
+	err = s.db.MarkFeedFetched(context.Background(), params)
+	if err != nil {
+		return err
+	}
+	fetchedFeed, err := fetchFeed(context.Background(), feed.Url)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\nFetching items from: %v\n\n", feed.Name)
+	for i := range fetchedFeed.Channel.Item {
+		fmt.Println(fetchedFeed.Channel.Item[i].Title)
+	}
+	return nil
 
 }
 
