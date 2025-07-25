@@ -363,7 +363,38 @@ func scrapeFeeds(s *state) error {
 	}
 	fmt.Printf("\nFetching items from: %v\n\n", feed.Name)
 	for i := range fetchedFeed.Channel.Item {
-		fmt.Println(fetchedFeed.Channel.Item[i].Title)
+		item := fetchedFeed.Channel.Item[i]
+		var descriptionParam sql.NullString
+		if item.Description != "" {
+			descriptionParam = sql.NullString{String: item.Description, Valid: true}
+		} else {
+			descriptionParam = sql.NullString{Valid: false}
+		}
+		var publshedAtParam time.Time
+		if item.PubDate != "" {
+			parsedTime, err := time.Parse(time.RFC1123Z, item.PubDate)
+			if err != nil {
+				publshedAtParam = time.Time{}
+			} else {
+				publshedAtParam = parsedTime
+			}
+		}
+		postParams := database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: descriptionParam,
+			PublishedAt: publshedAtParam,
+			FeedID:      feed.ID,
+		}
+		post, err := s.db.CreatePost(context.Background(), postParams)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("New Post: \n%+v\n", post)
+
 	}
 	return nil
 
