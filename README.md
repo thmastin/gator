@@ -23,7 +23,7 @@ On Linux/macOS, you can add this line to your `.bashrc`, `.zshrc`, or `.profile`
 ```sh
 export PATH="$PATH:$HOME/go/bin"
 ```
-On Windows, add %USERPROFILE%\go\bin to your system’s PATH environment variable.
+On Windows, add `%USERPROFILE%\go\bin` to your system’s PATH environment variable.
 [See here for instructions on editing your PATH on Windows.](https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows)
 ---
 
@@ -33,6 +33,7 @@ Before running `gator`, create a config file named `.gatorconfig.json` in your h
 
 - Linux/macOS: `/home/yourname/.gatorconfig.json`
 - Windows: `C:\Users\YourName\.gatorconfig.json`
+
 ```json
 {
   "db_url": "url for your postgres DB goes here",
