@@ -226,7 +226,7 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 	}
 	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.arguments[0])
 	if err != nil {
-		return fmt.Errorf("unagle to get feed: %v", err)
+		return fmt.Errorf("unable to get feed: %v", err)
 	}
 	feed_follow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
