@@ -16,10 +16,12 @@ In your command line type the following:
 ## Configuration
 
 Before running gator, you need to create a config file named .gatorconfig.json in your home directory. Here’s what it should look like:
-`{
+...
+{
   "db_url": "url for your postgres DB goes here",
   "current_user_name": ""
-}`
+}
+...
 
 - db_url: The full connection string to your Postgres database
 - current_user_name: Your username for the application
