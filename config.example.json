@@ -1,0 +1,4 @@
+{
+    "db_url":"url for your postgres DB goes here",
+    "current_user_name":""
+}
