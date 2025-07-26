@@ -23,8 +23,9 @@ On Linux/macOS, you can add this line to your `.bashrc`, `.zshrc`, or `.profile`
 ```sh
 export PATH="$PATH:$HOME/go/bin"
 ```
-On Windows, add `%USERPROFILE%\go\bin` to your system’s PATH environment variable.
-[See here for instructions on editing your PATH on Windows.](https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows)
+
+On Windows, add `%USERPROFILE%\go\bin` to your system’s PATH environment variable.[See here for instructions on editing your PATH on Windows.](https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows)
+
 ---
 
 ## Configuration
